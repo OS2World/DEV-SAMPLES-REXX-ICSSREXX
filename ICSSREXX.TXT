@@ -1,0 +1,241 @@
+ICSS REXX Interface 
+May 5, 1994
+
+******************************************************************************
+* The use of the ICSS REXX Interface DLL is licensed only to licensees       *
+* of the IBM Continuous Speech Series Developer's Tool Kit and is subject    *
+* to all the terms and conditions of the Program License Agreement that is   *
+* included with this Tool Kit.                                               *
+******************************************************************************
+
+****************************************************************************** 
+*                                                                            * 
+* COPYRIGHT:                                                                 * 
+* ----------                                                                 * 
+* Copyright (C) International Business Machines Corp., 1994.                 * 
+*                                                                            * 
+* DISCLAIMER OF WARRANTIES:                                                  * 
+* -------------------------                                                  * 
+* The ICSS REXX Interface DLL is sample code created by IBM                  * 
+* Corporation.  This sample code is not part of any standard IBM product     * 
+* and is provided to you solely for the purpose of assisting you in the      * 
+* development of your applications.  The code is provided "AS IS",           * 
+* without warranty of any kind.  IBM shall not be liable for any damages     * 
+* arising out of your use of the sample code, even if they have been         * 
+* advised of the possibility of such damages.                                * 
+*                                                                            * 
+****************************************************************************** 
+
+-----------------
+Package Contents:
+-----------------
+
+   ICSSREXX.DLL - The interface DLL enabling the ICSS API from REXX.
+   ICSSREXX.DOC - License information and usage documentation (this file).
+   REXXRECO.CMD - Sample REXX program using the ICSS API.  Similar to 
+                  the reco.c program included with the ICSS toolkit.
+   ICSSTEST.VRP - WATCOM* VX-REXX* project file for a sample program using the 
+                  ICSS API.
+   ICSSTEST.VRX - WATCOM VX-REXX project file for a sample program using the 
+                  ICSS API.
+   ICSSTEST.VRY - WATCOM VX-REXX project file for a sample program using the 
+                  ICSS API.
+------------
+Description:
+------------
+
+ICSSREXX is a set of REXX external functions which call the ICSS APIs.  All
+APIs and parameters are enabled.  A non-zero return code means that you
+called the function with the wrong number of parameters.  Otherwise, each
+function returns a string consisting of the ICSS return value followed by the
+other ICSS output fields, if any.
+
+To set up ICSSREXX on your own machine, just copy ICSSREXX.DLL into any
+directory in your LIBPATH.
+
+For details on parameter values and return codes, refer to your ICSS 
+Developers Toolkit documentation.
+
+* WATCOM and VX-REXX are trademarks of WATCOM International Corporation.
+
+---------------------------
+How To Call ICSS From REXX:
+---------------------------
+
+1) Make sure ICSSREXX.DLL is in your LIBPATH.
+
+2) Include the following two lines in your REXX program before the first call to ICSS:
+
+   call RxFuncAdd 'LoadFunctions', 'ICSSREXX', 'LoadFunctions' 
+   call LoadFunctions 
+
+3) Now you can call ICSS.  Here are the API calls and the data which is 
+   returned, if applicable.  The convention is to use icss_rc if the 
+   returned data is the ICSS return code, and icss_data if the returned
+   data is a string which must be parsed to get the ICSS return code and
+   other values associated with the API function.  A sample parse command
+   is also shown when the return string must be parsed.
+
+   icss_rc = ICRXStart("")  /* Null string is required */
+
+   icss_rc = ICRXStartConversation(ADCName, ADCNumber, RPSystemName,
+                 RPLinkType)
+
+   icss_data = ICRXLoadContext(ContextName, InsertionPenalty, LanguageWeight,
+                GrammarWeight)
+
+               <<< parse var icss_data icss_rc ContextHandle >>>
+
+   icss_data = ICRXGetValue(ParameterID)
+
+               <<< parse var icss_data icss_rc ParameterValue >>>
+
+   icss_rc = ICRXSetValue(ParameterID, ParameterValue)
+
+   icss_rc = ICRXListen(ContextHandle, SpeechInputSource,
+                 SpeechInputFilename)
+
+   icss_rc = ICRXInterruptListenState()  
+
+   icss_data = ICRXGetSpokenWords()
+
+               <<<parse var icss_data icss_rc SpokeTooSoon UtteranceLength ,
+                   AcquisitionTime RecognitionTime TextReturned; >>>
+
+   icss_rc = ICRXPlayback(SampleRate, AudioOutputFileName)
+
+   icss_rc = ICRXRemoveContext(ContextHandle)
+
+   icss_rc = ICRXEndConversation()
+
+   icss_rc = ICRXEnd()                                                             
+
+4) Unload the functions when done:
+
+      call DropFunctions 
+
+
+----------
+Constants:
+----------
+
+For convenience in using the REXX external functions, here are some useful
+constants from icssapi.h.  They may be copied directly into your REXX program
+if desired.
+ 
+/*  return values from icssapi.h -- remember to add 1 to the icss returned */
+/*                                  value before translating with this     */
+/*                                  table.                                 */ 
+
+retvals = 'ICSS_SUCCESS ',                   /* 0 */ 
+          'ICSS_ERR_ICSS_NOT_ACTIVE ',       /* 1 */
+          'ICSS_ERR_ICSS_ALREADY_INIT ',     /* etc... */
+          'ICSS_ERR_INITIALIZED ',  
+          'ICSS_ERR_CONV_ACTIVE ',
+          'ICSS_ERR_CONV_ALREADY_STARTED ',
+          'ICSS_ERR_LISTENING ',
+          'ICSS_ERR_INIT_MSG ',
+          'ICSS_ERR_INIT_GLOBAL ',
+          'ICSS_ERR_INIT_SEMAPHORE ',
+
+          'ICSS_ERR_INIT_GLOBAL_DATA ',
+          'ICSS_ERR_INIT_ISTG_FAILED ',
+          'ICSS_ERR_INIT_POOL_SERVICE ',
+          'ICSS_ERR_TERM_ISTG_FAILED ',
+          'ICSS_ERR_LOAD_ADC_CODE ',
+          'ICSS_ERR_INVALID_ADCNUMBER ',
+          'ICSS_ERR_INVALID_RPLINKTYPE ',
+          'ICSS_ERR_CONTEXT_NOT_LOADED ',
+          'ICSS_ERR_CODEBOOKS_NOT_READ ',
+          'ICSS_ERR_MAX_CTX_REACHED ',
+
+          'ICSS_ERR_INVALID_PARAMETER_ID ',
+          'ICSS_ERR_INVALID_PARM_VALUE ',
+          'ICSS_ERR_CONTEXT_NOT_AVAILABLE ',
+          'ICSS_ERR_INVALID_INSERTION_PENALTY ',
+          'ICSS_ERR_INVALID_LANGUAGE_WEIGHT ',
+          'ICSS_ERR_INVALID_GRAMMAR_WEIGHT ',
+          'ICSS_ERR_INVALID_SPEECH_INPUT_SOURCE ',
+          'ICSS_ERR_INVALID_SPEECH_INPUT_FILENAME ',
+          'ICSS_ERR_SPEECH_INPUT_SOURCE ',
+          'ICSS_ERR_INVALID_SAMPLE_RATE ',
+
+          'ICSS_ERR_PLAYBACK_FAILED ',
+          'ICSS_ERR_EMPTY_RESPONSE ',
+          'ICSS_ERR_TRUNCATED_RESPONSE ',
+          'ICSS_ERR_EXCEEDED_MAX_SIL ',
+          'ICSS_ERR_EXCEEDED_MAX_TALK ',
+          'ICSS_ERR_LISTEN_STATE_INTERRUPTED ',
+          'ICSS_ERR_UNLOAD_ADC_CODE',
+          'ICSS_ERR_ISTG_START_CONVERSATION,             
+          'ICSS_ERR_ISTG_END_CONVERSATION,               
+          'ICSS_ERR_ISTG_FAILED,                         
+          
+          'ICSS_ERR_FBS_SEMAPHORE',                       
+          'ICSS_ERR_FBS_SHARED_MEMORY',                   
+          'ICSS_ERR_FBS_MEMORY',                          
+          'ICSS_ERR_FBS_UNKNOWN_CONTEXT',                 
+          'ICSS_ERR_FBS_NOT_SETUP',                       
+          'ICSS_ERR_FBS_NULL_REQUEST',                    
+          'ICSS_ERR_FBS_MAX_CONTEXTS',                    
+          'ICSS_ERR_FBS_OPEN_CONTEXT',                    
+          'ICSS_ERR_FBS_READ_CONTEXT',                    
+          'ICSS_ERR_FBS_OPEN_CPDFILE',                    
+          
+          'ICSS_ERR_FBS_INCOMPATIBLE_CPDFILE',            
+          'ICSS_ERR_FBS_INVALID_CONTEXT',                 
+          'ICSS_ERR_FBS_TOO_MANY_CPDFILES',               
+          'ICSS_ERR_FBS_READ_CPDFILE',                    
+          'ICSS_ERR_FBS_BUFFER_OVERFLOW',                 
+          'ICSS_ERR_FBS_RPC_FAILURE',                     
+          'ICSS_ERR_FBS_RPC_INVALID_HOST',                
+          'ICSS_ERR_FBS_RPC_SERVER_UNAVAIL',              
+          'ICSS_ERR_FBS',                                 
+          'ICSS_ERR_INVALID_ICSSDIR',                     
+          
+          'ICSS_ERR_INVALID_RPSYSTEMNAME',                
+          'ICSS_ERR_SHOULD_NOT_OCCUR';                     
+                   
+ /* Parmameter IDs for GetValue and SetValue              */
+ /* (parameter names have been shortened for convenience) */
+
+ /* IDs for integer parms */
+ VERBOSE_LEVEL = 10;
+ UTT_START = 20;
+ UTT_END = 21;
+ ATTN_START = 30;
+ ATTN_END = 31;
+
+ /* IDs for floating point parms */
+ BEAM_WIDTH = 110;
+ UTT_MIN_DURATION = 120;
+ UTT_MAX_DURATION = 121;
+ UTT_MAX_SIL = 122;
+ UTT_END_SIL = 123;
+ ATTN_MIN_DURATION = 130;
+ ATTN_MAX_DURATION = 131;
+ ATTN_INTERUTT_DURATION = 132;
+
+ /* IDs for string parms */
+ RECORD_SESSION_NAME = 210;
+ RECORD_SPEECH_NAME = 211;
+ RECORD_FUTURE = 212;
+ RECORD_VQ_NAME = 213;
+
+ /* default values */
+ DEFAULT_INT = '-1';  
+ DEFAULT_FLOAT = '-2.0';
+ DEFAULT_STRING = '';
+
+ /* defined parameter values */
+
+ /* ICRXStartConversation */
+ DIRECT = 2;          /* RPLinkType    */
+ RPC = 3;             /* RPLinkType    */
+
+ /* ICRXListen */
+ LIVE_MIKE = 5;    /* SpeechInputSource  */
+ LIVE_LINE = 6;    /* SpeechInputSource  */
+ RECORDED = 7;     /* SpeechInputSource  */
+
+ 

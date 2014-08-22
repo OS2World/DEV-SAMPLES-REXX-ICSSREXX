@@ -1,0 +1,7 @@
+VX-REXX OS/2 V2.00 Build B3
+VRX: icsstest.VRX
+VRXWindow: __VREMainWindow,1,301,166,5300,8000
+VRXWindow: __VRESectionListWindow,1,166,8477,2650,3150
+VRXWindow: __VREToolsWindow,1,1460,6309,4014,1718
+UserFile: 1
+UserWindow: Window1,1
